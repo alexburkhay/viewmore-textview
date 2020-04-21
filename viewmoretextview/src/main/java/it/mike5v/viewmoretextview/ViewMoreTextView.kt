@@ -7,13 +7,15 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.os.Build
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
 import android.text.style.UnderlineSpan
 import android.util.AttributeSet
-import android.widget.TextView
+import androidx.annotation.RequiresApi
+import androidx.appcompat.widget.AppCompatTextView
 
 /**
  * Created by Michele Quintavalle on 2020-01-15.
@@ -22,7 +24,7 @@ class ViewMoreTextView @JvmOverloads constructor(
     context: Context?,
     attrs: AttributeSet?,
     defStyleAttr: Int = 0
-) : TextView(context, attrs, defStyleAttr) {
+) : AppCompatTextView(context, attrs, defStyleAttr) {
 
     companion object {
         const val ANIMATION_PROPERTY_MAX_HEIGHT = "maxHeight"
@@ -48,10 +50,12 @@ class ViewMoreTextView @JvmOverloads constructor(
         visibleLines = attributes?.getInt(R.styleable.ViewMoreTextView_visibleLines, 0)
         isExpanded = attributes?.getBoolean(R.styleable.ViewMoreTextView_isExpanded, false)
         animationDuration = attributes?.getInt(R.styleable.ViewMoreTextView_duration, 1000)
-        foregroundColor = attributes?.getColor(R.styleable.ViewMoreTextView_foregroundColor, Color.TRANSPARENT)
+        foregroundColor =
+            attributes?.getColor(R.styleable.ViewMoreTextView_foregroundColor, Color.TRANSPARENT)
         ellipsizeText = attributes?.getString(R.styleable.ViewMoreTextView_ellipsizeText)
         isUnderlined = attributes?.getBoolean(R.styleable.ViewMoreTextView_isUnderlined, false)
-        ellipsizeTextColor = attributes?.getColor(R.styleable.ViewMoreTextView_ellipsizeTextColor, Color.BLUE)
+        ellipsizeTextColor =
+            attributes?.getColor(R.styleable.ViewMoreTextView_ellipsizeTextColor, Color.BLUE)
         attributes?.recycle()
     }
 
@@ -61,8 +65,11 @@ class ViewMoreTextView @JvmOverloads constructor(
             initialValue = text.toString()
 
             setMaxLines(isExpanded!!)
-            setForeground(isExpanded!!)
             setEllipsizedText(isExpanded!!)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                setForeground(isExpanded!!)
+            }
         }
     }
 
@@ -174,6 +181,7 @@ class ViewMoreTextView @JvmOverloads constructor(
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     private fun setForeground(isExpanded: Boolean) {
         foreground = GradientDrawable(
             GradientDrawable.Orientation.BOTTOM_TOP,
@@ -188,20 +196,29 @@ class ViewMoreTextView @JvmOverloads constructor(
 
     private fun animationSet(startHeight: Int, endHeight: Int): AnimatorSet {
         return AnimatorSet().apply {
-            playTogether(
-                ObjectAnimator.ofInt(
-                    this@ViewMoreTextView,
-                    ANIMATION_PROPERTY_MAX_HEIGHT,
-                    startHeight,
-                    endHeight
-                ),
-                ObjectAnimator.ofInt(
-                    this@ViewMoreTextView.foreground,
-                    ANIMATION_PROPERTY_ALPHA,
-                    foreground.alpha,
-                    MAX_VALUE_ALPHA - foreground.alpha
+            val animators = ArrayList(
+                listOf(
+                    ObjectAnimator.ofInt(
+                        this@ViewMoreTextView,
+                        ANIMATION_PROPERTY_MAX_HEIGHT,
+                        startHeight,
+                        endHeight
+                    )
                 )
             )
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                animators.add(
+                    ObjectAnimator.ofInt(
+                        this@ViewMoreTextView.foreground,
+                        ANIMATION_PROPERTY_ALPHA,
+                        foreground.alpha,
+                        MAX_VALUE_ALPHA - foreground.alpha
+                    )
+                )
+            }
+
+            playTogether(*animators.toTypedArray())
         }
     }
 
