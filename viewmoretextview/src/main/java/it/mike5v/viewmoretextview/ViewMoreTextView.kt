@@ -63,14 +63,19 @@ class ViewMoreTextView @JvmOverloads constructor(
         super.onDraw(canvas)
         if (initialValue.isNullOrBlank()) {
             initialValue = text.toString()
-
-            setMaxLines(isExpanded!!)
-            setEllipsizedText(isExpanded!!)
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                setForeground(isExpanded!!)
-            }
         }
+
+        setMaxLines(isExpanded!!)
+        setEllipsizedText(isExpanded!!)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            setForeground(isExpanded!!)
+        }
+    }
+
+    fun clear() {
+        this.initialValue = null
+        this.setIsExpanded(false)
     }
 
     fun toggle() {
