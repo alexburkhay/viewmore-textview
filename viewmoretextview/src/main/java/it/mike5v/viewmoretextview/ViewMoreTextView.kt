@@ -16,6 +16,7 @@ import android.text.style.UnderlineSpan
 import android.util.AttributeSet
 import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatTextView
+import kotlin.math.max
 
 /**
  * Created by Michele Quintavalle on 2020-01-15.
@@ -62,7 +63,7 @@ class ViewMoreTextView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         if (initialValue.isNullOrBlank()) {
-            initialValue = text.toString()
+            initialValue = (text ?: "").toString()
         }
 
         setMaxLines(isExpanded!!)
@@ -155,12 +156,11 @@ class ViewMoreTextView @JvmOverloads constructor(
         text = if (isExpanded || visibleText.isAllTextVisible()) {
             initialValue
         } else {
-            SpannableStringBuilder(
-                visibleText.substring(
-                    0,
-                    visibleText.length - (ellipsizeText.orEmpty().length + DEFAULT_ELLIPSIZED_TEXT.length)
-                )
+            val upperBound = max(
+                visibleText.length - (ellipsizeText.orEmpty().length + DEFAULT_ELLIPSIZED_TEXT.length),
+                0
             )
+            SpannableStringBuilder(visibleText.substring(0, upperBound))
                 .append(DEFAULT_ELLIPSIZED_TEXT)
                 .append(ellipsizeText.orEmpty().span())
 
