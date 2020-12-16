@@ -16,6 +16,7 @@ import android.text.style.UnderlineSpan
 import android.util.AttributeSet
 import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatTextView
+import java.lang.Exception
 import kotlin.math.max
 
 /**
@@ -169,9 +170,13 @@ class ViewMoreTextView @JvmOverloads constructor(
     private fun visibleText(): String {
         var end = 0
 
-        for (i in 0 until visibleLines!!) {
-            if (layout.getLineEnd(i) != 0)
-                end = layout.getLineEnd(i)
+        try {
+            for (i in 0 until visibleLines!!) {
+                if (layout.getLineEnd(i) != 0)
+                    end = layout.getLineEnd(i)
+            }
+        } catch (e: IndexOutOfBoundsException) {
+            return initialValue!!
         }
 
         return initialValue?.substring(0, end)!!
