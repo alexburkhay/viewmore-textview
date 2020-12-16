@@ -67,11 +67,10 @@ class ViewMoreTextView @JvmOverloads constructor(
         }
 
         setMaxLines(isExpanded!!)
-        setEllipsizedText(isExpanded!!)
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             setForeground(isExpanded!!)
         }
+        setEllipsizedText(isExpanded!!)
     }
 
     fun clear() {
@@ -200,9 +199,9 @@ class ViewMoreTextView @JvmOverloads constructor(
     }
 
     private fun animationSet(startHeight: Int, endHeight: Int): AnimatorSet {
-        return AnimatorSet().apply {
-            val animators = ArrayList(
-                listOf(
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return AnimatorSet().apply {
+                playTogether(
                     ObjectAnimator.ofInt(
                         this@ViewMoreTextView,
                         ANIMATION_PROPERTY_MAX_HEIGHT,
@@ -210,20 +209,24 @@ class ViewMoreTextView @JvmOverloads constructor(
                         endHeight
                     )
                 )
-            )
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                animators.add(
-                    ObjectAnimator.ofInt(
-                        this@ViewMoreTextView.foreground,
-                        ANIMATION_PROPERTY_ALPHA,
-                        foreground.alpha,
-                        MAX_VALUE_ALPHA - foreground.alpha
-                    )
-                )
             }
+        }
 
-            playTogether(*animators.toTypedArray())
+        return AnimatorSet().apply {
+            playTogether(
+                ObjectAnimator.ofInt(
+                    this@ViewMoreTextView,
+                    ANIMATION_PROPERTY_MAX_HEIGHT,
+                    startHeight,
+                    endHeight
+                ),
+                ObjectAnimator.ofInt(
+                    this@ViewMoreTextView.foreground,
+                    ANIMATION_PROPERTY_ALPHA,
+                    foreground.alpha,
+                    MAX_VALUE_ALPHA - foreground.alpha
+                )
+            )
         }
     }
 

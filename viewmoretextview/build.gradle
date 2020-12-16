@@ -8,16 +8,16 @@ ext {
     bintrayRepo = 'maven'
     bintrayName = 'viewmore-textview'
 
-    publishedGroupId = 'it.mike5v'
+    publishedGroupId = 'com.github.alexburkhay'
     libraryName = 'ViewMore TextView'
     artifact = 'viewmore-textview'
 
     libraryDescription = 'ViewMore TextView'
 
-    siteUrl = 'https://github.com/mike5v/viewmore-textview'
-    gitUrl = 'https://github.com/mike5v/viewmore-textview.git'
+    siteUrl = 'https://github.com/alexburkhay/viewmore-textview'
+    gitUrl = 'https://github.com/alexburkhay/viewmore-textview.git'
 
-    libraryVersion = '1.1.3'
+    libraryVersion = '1.1.5'
 
     developerId = 'michele5valle'
     developerName = 'Michele Quintavalle'
