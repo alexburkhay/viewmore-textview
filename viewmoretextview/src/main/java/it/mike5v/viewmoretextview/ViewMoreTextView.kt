@@ -139,6 +139,8 @@ class ViewMoreTextView @JvmOverloads constructor(
         return this
     }
 
+    fun isTextExpanded(): Boolean = this.isExpanded!!
+
     fun setAnimationDuration(animationDuration: Int): ViewMoreTextView {
         this.animationDuration = animationDuration
         return this
