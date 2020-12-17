@@ -16,6 +16,7 @@ import android.text.style.UnderlineSpan
 import android.util.AttributeSet
 import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.text.toSpanned
 import java.lang.Exception
 import kotlin.math.max
 
@@ -26,7 +27,7 @@ class ViewMoreTextView @JvmOverloads constructor(
     context: Context?,
     attrs: AttributeSet?,
     defStyleAttr: Int = 0
-) : AppCompatTextView(context, attrs, defStyleAttr) {
+) : AppCompatTextView(context!!, attrs, defStyleAttr) {
 
     companion object {
         const val ANIMATION_PROPERTY_MAX_HEIGHT = "maxHeight"
@@ -44,6 +45,8 @@ class ViewMoreTextView @JvmOverloads constructor(
     private var initialValue: String? = null
     private var isUnderlined: Boolean? = null
     private var ellipsizeTextColor: Int? = null
+
+    private var isAnimating: Boolean = false
 
     private val visibleText by lazy { visibleText() }
 
@@ -67,11 +70,16 @@ class ViewMoreTextView @JvmOverloads constructor(
             initialValue = (text ?: "").toString()
         }
 
+//        val alreadySet = maxLines == visibleLines && !isExpanded!! || isExpanded!! && maxLines == Integer.MAX_VALUE;
+//        if (!alreadySet || true) {
         setMaxLines(isExpanded!!)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             setForeground(isExpanded!!)
         }
-        setEllipsizedText(isExpanded!!)
+        if (!isAnimating) {
+            setEllipsizedText(isExpanded!!)
+        }
+//        }
     }
 
     fun clear() {
@@ -84,6 +92,7 @@ class ViewMoreTextView @JvmOverloads constructor(
             return
         }
 
+        isAnimating = true
         isExpanded = !isExpanded!!
 
         if (isExpanded!!)
@@ -103,13 +112,19 @@ class ViewMoreTextView @JvmOverloads constructor(
 
             addListener(object : Animator.AnimatorListener {
                 override fun onAnimationEnd(animation: Animator?) {
-                    if (!isExpanded!!)
+                    if (!isExpanded!!) {
                         setEllipsizedText(isExpanded!!)
+                    }
+                    isAnimating = false
                 }
 
                 override fun onAnimationRepeat(animation: Animator?) {}
-                override fun onAnimationCancel(animation: Animator?) {}
-                override fun onAnimationStart(animation: Animator?) {}
+                override fun onAnimationCancel(animation: Animator?) {
+                    isAnimating = false
+                }
+                override fun onAnimationStart(animation: Animator?) {
+                    isAnimating = true
+                }
             })
         }
     }
@@ -155,6 +170,8 @@ class ViewMoreTextView @JvmOverloads constructor(
 
         text = if (isExpanded || visibleText.isAllTextVisible()) {
             initialValue
+            /*if ((isExpanded || visibleText.isAllTextVisible()) && (text == null || !text.toString().equals(initialValue))) {
+                text = initialValue*/
         } else {
             val upperBound = max(
                 visibleText.length - (ellipsizeText.orEmpty().length + DEFAULT_ELLIPSIZED_TEXT.length),
@@ -163,7 +180,11 @@ class ViewMoreTextView @JvmOverloads constructor(
             SpannableStringBuilder(visibleText.substring(0, upperBound))
                 .append(DEFAULT_ELLIPSIZED_TEXT)
                 .append(ellipsizeText.orEmpty().span())
-
+            /*if (text == null || !builder.toSpanned().toString().equals(text.toString())) {
+                text = builder
+            } else {
+                return
+            }*/
         }
     }
 
