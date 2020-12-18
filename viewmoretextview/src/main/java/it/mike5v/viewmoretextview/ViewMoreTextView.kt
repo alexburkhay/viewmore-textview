@@ -49,7 +49,7 @@ class ViewMoreTextView @JvmOverloads constructor(
     private var isAnimating: Boolean = false
     private var isSettingInternalText: Boolean = false
 
-    private val visibleText by lazy { visibleText() }
+    private var visibleText: String? = null
 
     init {
         val attributes = context?.obtainStyledAttributes(attrs, R.styleable.ViewMoreTextView)
@@ -88,6 +88,7 @@ class ViewMoreTextView @JvmOverloads constructor(
     override fun setText(text: CharSequence?, type: BufferType?) {
         if (!isSettingInternalText) {
             initialValue = (text ?: "").toString()
+            visibleText = null;
         }
         super.setText(text, type)
     }
@@ -98,7 +99,7 @@ class ViewMoreTextView @JvmOverloads constructor(
     }
 
     fun toggle() {
-        if (visibleText.isAllTextVisible()) {
+        if (visibleText().isAllTextVisible()) {
             return
         }
 
@@ -181,16 +182,17 @@ class ViewMoreTextView @JvmOverloads constructor(
             return
 
         isSettingInternalText = true
-        text = if (isExpanded || visibleText.isAllTextVisible()) {
+        val vText = visibleText()
+        text = if (isExpanded || vText.isAllTextVisible()) {
             initialValue
             /*if ((isExpanded || visibleText.isAllTextVisible()) && (text == null || !text.toString().equals(initialValue))) {
                 text = initialValue*/
         } else {
             val upperBound = max(
-                visibleText.length - (ellipsizeText.orEmpty().length + DEFAULT_ELLIPSIZED_TEXT.length),
+                vText.length - (ellipsizeText.orEmpty().length + DEFAULT_ELLIPSIZED_TEXT.length),
                 0
             )
-            SpannableStringBuilder(visibleText.substring(0, upperBound))
+            SpannableStringBuilder(vText.substring(0, upperBound))
                 .append(DEFAULT_ELLIPSIZED_TEXT)
                 .append(ellipsizeText.orEmpty().span())
             /*if (text == null || !builder.toSpanned().toString().equals(text.toString())) {
@@ -203,6 +205,9 @@ class ViewMoreTextView @JvmOverloads constructor(
     }
 
     private fun visibleText(): String {
+        if (visibleText != null)
+            return visibleText!!
+
         var end = 0
 
         try {
