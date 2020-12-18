@@ -12,7 +12,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         viewMore
-            .setAnimationDuration(500)
+            .setAnimationDuration(400)
             .setEllipsizedText("View More")
             .setVisibleLines(3)
             .setIsExpanded(false)

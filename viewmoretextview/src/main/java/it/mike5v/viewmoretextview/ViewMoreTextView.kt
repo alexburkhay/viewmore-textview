@@ -47,6 +47,7 @@ class ViewMoreTextView @JvmOverloads constructor(
     private var ellipsizeTextColor: Int? = null
 
     private var isAnimating: Boolean = false
+    private var isSettingInternalText: Boolean = false
 
     private val visibleText by lazy { visibleText() }
 
@@ -66,24 +67,33 @@ class ViewMoreTextView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
-        if (initialValue.isNullOrBlank()) {
+        /*if (initialValue.isNullOrBlank()) {
+            initialValue = (text ?: "").toString()
+        }*/
+
+        val isForegroundSet = Build.VERSION.SDK_INT < Build.VERSION_CODES.M || foreground != null
+        val alreadySet = isForegroundSet
+                && (maxLines == visibleLines && !isExpanded!! || isExpanded!! && maxLines == Integer.MAX_VALUE)
+        if (!alreadySet) {
+            setMaxLines(isExpanded!!)
+            if (!isAnimating) {
+                setEllipsizedText(isExpanded!!)
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                setForeground(isExpanded!!)
+            }
+        }
+    }
+
+    override fun setText(text: CharSequence?, type: BufferType?) {
+        if (!isSettingInternalText) {
             initialValue = (text ?: "").toString()
         }
-
-//        val alreadySet = maxLines == visibleLines && !isExpanded!! || isExpanded!! && maxLines == Integer.MAX_VALUE;
-//        if (!alreadySet || true) {
-        setMaxLines(isExpanded!!)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            setForeground(isExpanded!!)
-        }
-        if (!isAnimating) {
-            setEllipsizedText(isExpanded!!)
-        }
-//        }
+        super.setText(text, type)
     }
 
     fun clear() {
-        this.initialValue = null
+        this.isAnimating = false
         this.setIsExpanded(false)
     }
 
@@ -170,6 +180,7 @@ class ViewMoreTextView @JvmOverloads constructor(
         if (initialValue?.isBlank()!!)
             return
 
+        isSettingInternalText = true
         text = if (isExpanded || visibleText.isAllTextVisible()) {
             initialValue
             /*if ((isExpanded || visibleText.isAllTextVisible()) && (text == null || !text.toString().equals(initialValue))) {
@@ -188,6 +199,7 @@ class ViewMoreTextView @JvmOverloads constructor(
                 return
             }*/
         }
+        isSettingInternalText = false
     }
 
     private fun visibleText(): String {
