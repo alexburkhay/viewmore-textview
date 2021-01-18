@@ -62,6 +62,7 @@ class ViewMoreTextView @JvmOverloads constructor(
         isUnderlined = attributes?.getBoolean(R.styleable.ViewMoreTextView_isUnderlined, false)
         ellipsizeTextColor =
             attributes?.getColor(R.styleable.ViewMoreTextView_ellipsizeTextColor, Color.BLUE)
+        setMaxLines(isExpanded!!)
         attributes?.recycle()
     }
 
