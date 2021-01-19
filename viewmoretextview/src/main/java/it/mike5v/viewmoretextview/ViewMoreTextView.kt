@@ -51,6 +51,8 @@ class ViewMoreTextView @JvmOverloads constructor(
 
     private var visibleText: String? = null
 
+    private var drawTry: Int = 0
+
     init {
         val attributes = context?.obtainStyledAttributes(attrs, R.styleable.ViewMoreTextView)
         visibleLines = attributes?.getInt(R.styleable.ViewMoreTextView_visibleLines, 0)
@@ -75,7 +77,13 @@ class ViewMoreTextView @JvmOverloads constructor(
         val isForegroundSet = Build.VERSION.SDK_INT < Build.VERSION_CODES.M || foreground != null
         val alreadySet = isForegroundSet
                 && (maxLines == visibleLines && !isExpanded!! || isExpanded!! && maxLines == Integer.MAX_VALUE)
-        if (!alreadySet) {
+        if (!alreadySet || drawTry == 0) {
+            drawTry = if (alreadySet) {
+                drawTry + 1
+            } else {
+                0
+            }
+
             setMaxLines(isExpanded!!)
             if (!isAnimating) {
                 setEllipsizedText(isExpanded!!)
@@ -83,6 +91,8 @@ class ViewMoreTextView @JvmOverloads constructor(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 setForeground(isExpanded!!)
             }
+        } else {
+            drawTry = 0
         }
     }
 
