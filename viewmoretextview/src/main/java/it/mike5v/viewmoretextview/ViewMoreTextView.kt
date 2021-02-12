@@ -16,6 +16,7 @@ import android.text.style.UnderlineSpan
 import android.util.AttributeSet
 import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.text.toSpannable
 import androidx.core.text.toSpanned
 import java.lang.Exception
 import kotlin.math.max
@@ -42,14 +43,14 @@ class ViewMoreTextView @JvmOverloads constructor(
     private var animationDuration: Int? = null
     private var foregroundColor: Int? = null
     private var ellipsizeText: String? = null
-    private var initialValue: String? = null
+    private var initialValue: Spannable? = null
     private var isUnderlined: Boolean? = null
     private var ellipsizeTextColor: Int? = null
 
     private var isAnimating: Boolean = false
     private var isSettingInternalText: Boolean = false
 
-    private var visibleText: String? = null
+    private var visibleText: Spannable? = null
 
     private var drawTry: Int = 0
 
@@ -98,7 +99,7 @@ class ViewMoreTextView @JvmOverloads constructor(
 
     override fun setText(text: CharSequence?, type: BufferType?) {
         if (!isSettingInternalText) {
-            initialValue = (text ?: "").toString()
+            initialValue = (text ?: "").toSpannable()
             visibleText = null;
         }
         super.setText(text, type)
@@ -203,7 +204,7 @@ class ViewMoreTextView @JvmOverloads constructor(
                 vText.length - (ellipsizeText.orEmpty().length + DEFAULT_ELLIPSIZED_TEXT.length),
                 0
             )
-            SpannableStringBuilder(vText.substring(0, upperBound))
+            SpannableStringBuilder(vText.subSequence(0, upperBound).toSpannable())
                 .append(DEFAULT_ELLIPSIZED_TEXT)
                 .append(ellipsizeText.orEmpty().span())
             /*if (text == null || !builder.toSpanned().toString().equals(text.toString())) {
@@ -215,7 +216,7 @@ class ViewMoreTextView @JvmOverloads constructor(
         isSettingInternalText = false
     }
 
-    private fun visibleText(): String {
+    private fun visibleText(): Spannable {
         if (visibleText != null)
             return visibleText!!
 
@@ -230,7 +231,7 @@ class ViewMoreTextView @JvmOverloads constructor(
             return initialValue!!
         }
 
-        return initialValue?.substring(0, end)!!
+        return initialValue?.subSequence(0, end)!!.toSpannable()
     }
 
     private fun setMaxLines(isExpanded: Boolean) {
@@ -287,6 +288,8 @@ class ViewMoreTextView @JvmOverloads constructor(
     }
 
     private fun String.isAllTextVisible(): Boolean = this == text
+
+    private fun Spannable.isAllTextVisible(): Boolean = this.toString() == text.toString()
 
     private fun String.span(): SpannableString =
         SpannableString(this).apply {
