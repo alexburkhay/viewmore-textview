@@ -200,10 +200,16 @@ class ViewMoreTextView @JvmOverloads constructor(
             /*if ((isExpanded || visibleText.isAllTextVisible()) && (text == null || !text.toString().equals(initialValue))) {
                 text = initialValue*/
         } else {
-            val upperBound = max(
-                vText.length - (ellipsizeText.orEmpty().length + DEFAULT_ELLIPSIZED_TEXT.length),
-                0
-            )
+            var upperBound = vText.length - (ellipsizeText.orEmpty().length + DEFAULT_ELLIPSIZED_TEXT.length);
+            if (upperBound <= 0) {
+                val index = vText.lastIndexOf("\n")
+                upperBound = if (index != -1) {
+                    index // keep see more on same line
+                } else {
+                    vText.length
+                }
+            }
+
             SpannableStringBuilder(vText.subSequence(0, upperBound).toSpannable())
                 .append(DEFAULT_ELLIPSIZED_TEXT)
                 .append(ellipsizeText.orEmpty().span())
@@ -223,9 +229,17 @@ class ViewMoreTextView @JvmOverloads constructor(
         var end = 0
 
         try {
+            val builder = SpannableStringBuilder()
+                .append(DEFAULT_ELLIPSIZED_TEXT)
+                .append(ellipsizeText.orEmpty().span()).toString()
             for (i in 0 until visibleLines!!) {
-                if (layout.getLineEnd(i) != 0)
-                    end = layout.getLineEnd(i)
+                if (layout.getLineEnd(i) != 0) {
+                    end = if ((i == visibleLines!! - 1) && layout.text.endsWith(builder)) {
+                        layout.getLineEnd(i) - builder.length + 1
+                    } else {
+                        layout.getLineEnd(i)
+                    }
+                }
             }
         } catch (e: IndexOutOfBoundsException) {
             return initialValue!!
