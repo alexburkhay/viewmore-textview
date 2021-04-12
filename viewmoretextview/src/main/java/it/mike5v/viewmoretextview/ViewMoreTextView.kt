@@ -200,13 +200,25 @@ class ViewMoreTextView @JvmOverloads constructor(
             /*if ((isExpanded || visibleText.isAllTextVisible()) && (text == null || !text.toString().equals(initialValue))) {
                 text = initialValue*/
         } else {
-            var upperBound = vText.length - (ellipsizeText.orEmpty().length + DEFAULT_ELLIPSIZED_TEXT.length);
-            if (upperBound <= 0) {
-                val index = vText.lastIndexOf("\n")
-                upperBound = if (index != -1) {
-                    index // keep see more on same line
-                } else {
-                    vText.length
+            var ellLength = (ellipsizeText.orEmpty().length + DEFAULT_ELLIPSIZED_TEXT.length)
+            var upperBound = vText.length
+
+            if (vText.length > ellLength && visibleLines!! > 1) {
+                if (layout.getLineWidth(visibleLines!! - 1) + paint.measureText(ellipsizeText + DEFAULT_ELLIPSIZED_TEXT) >= measuredWidth ) {
+                     upperBound = vText.length - ellLength - 1 // keep -1 for some space at the end
+                } else if (vText[vText.length - 1] == '\n') {
+                    upperBound = vText.length - 1
+                }
+            } else {
+                // short text case
+                upperBound = vText.length - ellLength
+                if (upperBound <= 0) {
+                    val index = vText.lastIndexOf("\n")
+                    upperBound = if (index != -1) {
+                        index // keep see more on same line
+                    } else {
+                        vText.length
+                    }
                 }
             }
 
@@ -245,7 +257,8 @@ class ViewMoreTextView @JvmOverloads constructor(
             return initialValue!!
         }
 
-        return initialValue?.subSequence(0, end)!!.toSpannable()
+        visibleText = initialValue?.subSequence(0, end)!!.toSpannable()
+        return visibleText!!
     }
 
     private fun setMaxLines(isExpanded: Boolean) {
